@@ -28,11 +28,11 @@ public class BulletsEmiter : MonoBehaviour {
     public void Fire(Vector3 destination)
     {
         Vector3 startSpeed = calculateStartSpeed(transform.position,
-            destination);
+            destination, Mathf.PI / 4);
                    
 
         Bullet bullet = CreateBullet();
-        bullet.transform.localPosition = Vector3.zero;
+        bullet.transform.position = transform.position;
         bullet.rigidbody.velocity = startSpeed;
         //bullet.rigidbody.AddForce(transform.forward * power, ForceMode.Impulse);
     }
@@ -40,8 +40,6 @@ public class BulletsEmiter : MonoBehaviour {
     private Bullet CreateBullet()
     {
         Bullet bullet = bulletsPull.GetObject();
-        bullet.tag = transform.tag;
-        bullet.transform.parent = transform;
         bullet.transform.localScale = prefab.transform.localScale;
         bullet.OnHit += onHit;
         bullet.gameObject.SetActive(true);
@@ -58,7 +56,6 @@ public class BulletsEmiter : MonoBehaviour {
 
     private IEnumerator effectCoroutine(ParticleSystem effect, Vector3 position)
     {
-        effect.transform.parent = transform;
         effect.transform.localScale = Vector3.one;
         effect.transform.position = position;
         effect.gameObject.SetActive(true);
@@ -71,28 +68,17 @@ public class BulletsEmiter : MonoBehaviour {
         effectsPull.ReleaseObject(effect);
     }
 
-    private Vector3 calculateStartSpeed(Vector3 startGlobalPostion, Vector3 targetGlobalPosition)
+    private Vector3 calculateStartSpeed(Vector3 startGlobalPostion, Vector3 targetGlobalPosition, float radAngle)
     {
         Vector3 lineDirection = targetGlobalPosition - startGlobalPostion;
-        float length = lineDirection.magnitude;
-        lineDirection.Normalize();
+        float heightDiff = lineDirection.y;
+        lineDirection.y = 0;
+        
+        float length = lineDirection.magnitude; 
+        lineDirection.y = length * Mathf.Tan(radAngle);
+        length += heightDiff / Mathf.Tan(radAngle);
 
-        var velocity = (float)(Math.Sin(Math.PI / 4) * Math.Sqrt(length * Physics.gravity.magnitude));
-        return new Vector3(lineDirection.x * velocity, velocity, lineDirection.z * velocity);
-    }
-
-    private Vector3 calculateAngleSpeed(Vector3 startGlobalPostion, Vector3 targetGlobalPosition)
-    {
-        Vector3 lineDirection = targetGlobalPosition - startGlobalPostion;
-        float length = lineDirection.magnitude;
-        lineDirection.Normalize();
-        double d = power / Math.Sqrt(length * Physics.gravity.magnitude);
-        Debug.Log("d = " + d);
-        double d1 = (d + 1) % 2 - 1;
-        Debug.Log("d1 = " + d1);
-        float angle = (float)(Mathf.Rad2Deg * Math.Asin(d1));
-        Debug.Log("angle = " + angle);
-        return Quaternion.AngleAxis(angle, Vector3.left) *
-            new Vector3(lineDirection.x * power, power, lineDirection.z * power);
+        float velocity = Mathf.Sqrt(length * Physics.gravity.magnitude / Mathf.Sin(2 * radAngle));
+        return velocity * lineDirection.normalized; 
     }
 }
