@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using Assets.Helpers;
 
@@ -12,6 +13,8 @@ public class BulletsEmiter : MonoBehaviour {
     [SerializeField]
     private float power;
 
+    public float MaxRange;
+
 
     private GameObjectPull<Bullet> bulletsPull; 
     private GameObjectPull<ParticleSystem> effectsPull; 
@@ -21,17 +24,18 @@ public class BulletsEmiter : MonoBehaviour {
         bulletsPull = new GameObjectPull<Bullet>(new GameObject("BulletsPull"), prefab, 30);
         effectsPull = new GameObjectPull<ParticleSystem>(new GameObject("EffectsPull"), explosionPrefab, 30);
 	}
-	
-	// Update is called once per frame
-	void Update () 
+
+    public void Fire(Vector3 destination)
     {
-          if (Input.GetMouseButtonUp(0))
-          {
-              Bullet bullet = CreateBullet();
-              bullet.transform.localPosition = Vector3.zero;
-              bullet.rigidbody.AddForce(transform.forward * power, ForceMode.Impulse);
-          }
-	}
+        Vector3 startSpeed = calculateStartSpeed(transform.position,
+            destination);
+                   
+
+        Bullet bullet = CreateBullet();
+        bullet.transform.localPosition = Vector3.zero;
+        bullet.rigidbody.velocity = startSpeed;
+        //bullet.rigidbody.AddForce(transform.forward * power, ForceMode.Impulse);
+    }
 
     private Bullet CreateBullet()
     {
@@ -65,5 +69,30 @@ public class BulletsEmiter : MonoBehaviour {
         }
 
         effectsPull.ReleaseObject(effect);
+    }
+
+    private Vector3 calculateStartSpeed(Vector3 startGlobalPostion, Vector3 targetGlobalPosition)
+    {
+        Vector3 lineDirection = targetGlobalPosition - startGlobalPostion;
+        float length = lineDirection.magnitude;
+        lineDirection.Normalize();
+
+        var velocity = (float)(Math.Sin(Math.PI / 4) * Math.Sqrt(length * Physics.gravity.magnitude));
+        return new Vector3(lineDirection.x * velocity, velocity, lineDirection.z * velocity);
+    }
+
+    private Vector3 calculateAngleSpeed(Vector3 startGlobalPostion, Vector3 targetGlobalPosition)
+    {
+        Vector3 lineDirection = targetGlobalPosition - startGlobalPostion;
+        float length = lineDirection.magnitude;
+        lineDirection.Normalize();
+        double d = power / Math.Sqrt(length * Physics.gravity.magnitude);
+        Debug.Log("d = " + d);
+        double d1 = (d + 1) % 2 - 1;
+        Debug.Log("d1 = " + d1);
+        float angle = (float)(Mathf.Rad2Deg * Math.Asin(d1));
+        Debug.Log("angle = " + angle);
+        return Quaternion.AngleAxis(angle, Vector3.left) *
+            new Vector3(lineDirection.x * power, power, lineDirection.z * power);
     }
 }
