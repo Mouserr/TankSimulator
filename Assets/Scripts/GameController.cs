@@ -33,23 +33,31 @@ public class GameController : MonoBehaviour {
     private void Update()
     {
         Ray crossRay = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-        if (!terrainCollider.Raycast(crossRay, out lastCursorHitInfo, 10000)
-            || (bulletsEmiter.transform.position - lastCursorHitInfo.point).sqrMagnitude > bulletsEmiter.MaxRange * bulletsEmiter.MaxRange)
+       
+        if (!terrainCollider.Raycast(crossRay, out lastCursorHitInfo, 10000))
         {
             canShoot = false;
         }
         else
         {
-            float restAngle = towerController.LookAt(lastCursorHitInfo.point);
-            if (Math.Abs(restAngle) < 0.001f)
+             float sqrRange = (towerController.transform.position - lastCursorHitInfo.point).sqrMagnitude;
+            if (sqrRange > bulletsEmiter.MaxRange*bulletsEmiter.MaxRange
+                || sqrRange < bulletsEmiter.MinRange*bulletsEmiter.MinRange)
             {
-                canShoot = true;
+                canShoot = false;
             }
             else
             {
-                canShoot = false;
-                movementController.Rotate(restAngle);
+                float restAngle = towerController.LookAt(lastCursorHitInfo.point);
+                if (Math.Abs(restAngle) < 0.001f)
+                {
+                    canShoot = true;
+                }
+                else
+                {
+                    canShoot = false;
+                    movementController.Rotate(restAngle);
+                }
             }
         }
 

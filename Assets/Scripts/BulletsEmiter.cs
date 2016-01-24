@@ -12,10 +12,8 @@ public class BulletsEmiter : MonoBehaviour {
     [SerializeField]
     private EffectWithSound explosionEffect;
 
-    [SerializeField]
-    private float power;
-
     public float MaxRange;
+    public float MinRange;
 
 
     private GameObjectPull<Bullet> bulletsPull;
@@ -33,8 +31,8 @@ public class BulletsEmiter : MonoBehaviour {
     {
         Vector3 startSpeed = calculateStartSpeed(transform.position,
             destination, Mathf.PI / 4);
-                   
-
+        if (startSpeed == Vector3.zero)
+            return;
         Bullet bullet = CreateBullet();
         StartCoroutine(effectCoroutine(shootsPull, transform.position, true));
         bullet.Rigidbody.velocity = startSpeed;
@@ -85,6 +83,7 @@ public class BulletsEmiter : MonoBehaviour {
         float length = lineDirection.magnitude; 
         lineDirection.y = length * Mathf.Tan(radAngle);
         length += heightDiff / Mathf.Tan(radAngle);
+        if (length <= 0) return Vector3.zero;
 
         float velocity = Mathf.Sqrt(length * Physics.gravity.magnitude / Mathf.Sin(2 * radAngle));
         return velocity * lineDirection.normalized; 

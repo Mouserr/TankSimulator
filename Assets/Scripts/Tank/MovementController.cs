@@ -10,6 +10,7 @@ public class MovementController : MonoBehaviour {
 
     private Quaternion destRotation;
     private Rigidbody mRigidbody;
+    private bool grounded = false;
 
     private void Awake()
     {
@@ -18,19 +19,41 @@ public class MovementController : MonoBehaviour {
 
     public void Rotate(float angle)
     {
-        destRotation = transform.localRotation * Quaternion.AngleAxis(angle, Vector3.up);
+        angle = Mathf.Sign(angle) * sideSpeed;
+        destRotation = transform.localRotation * Quaternion.AngleAxis(angle, transform.localRotation * Vector3.up);
     }
 
      private void FixedUpdate()
      {
-         float h = Input.GetAxis("Horizontal") * sideSpeed * Time.fixedDeltaTime;
-         float v = Input.GetAxis("Vertical") * forwardSpeed * Time.fixedDeltaTime;
+         
+         if (grounded) {
+            float h = Input.GetAxis("Horizontal") * sideSpeed;
+	        
+            Vector3 targetVelocity = new Vector3(0, 0, Input.GetAxis("Vertical"));
+	        targetVelocity = transform.TransformDirection(targetVelocity);
+	        targetVelocity *= forwardSpeed;
+ 
+            Vector3 velocity = mRigidbody.velocity;
+	        Vector3 velocityChange = (targetVelocity - velocity);
+            velocityChange.x = Mathf.Clamp(velocityChange.x, -forwardSpeed, forwardSpeed);
+            velocityChange.z = Mathf.Clamp(velocityChange.z, -forwardSpeed, forwardSpeed);
+	        velocityChange.y = 0;
+	        mRigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
 
-         mRigidbody.AddForce(transform.forward * v);
-         if (Mathf.Abs(h) > 0.001f)
-         {
-             destRotation = transform.localRotation * Quaternion.AngleAxis(h, Vector3.up);
+            if (Mathf.Abs(h) > 0.001f)
+            {
+                destRotation = transform.localRotation * Quaternion.AngleAxis(h, transform.localRotation * Vector3.up);
+            }
+
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, destRotation, Time.fixedDeltaTime);
+    
          }
-         transform.localRotation = Quaternion.Lerp(transform.localRotation, destRotation, Time.fixedDeltaTime);
+
+         grounded = false;
+     }
+
+     void OnCollisionStay()
+     {
+         grounded = true;
      }
 }
