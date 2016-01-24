@@ -1,17 +1,27 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Bullet : MonoBehaviour
 {
     [SerializeField]
     private Transform CenterOfMass;
+    [SerializeField]
+    private TrailRenderer Trail;
+    
     public delegate void HitDelegate(Vector3 point, Bullet bullet);
-
     public HitDelegate OnHit = (p, b) => {};
+
+    [HideInInspector]
+    public Rigidbody Rigidbody;
 
     private void Awake()
     {
-        rigidbody.centerOfMass = CenterOfMass.localPosition;
+        Rigidbody = GetComponent<Rigidbody>();
+        Rigidbody.centerOfMass = CenterOfMass.localPosition;
+    }
+
+    public void OnEnable()
+    {
+        Trail.Clear();
     }
 
     void OnCollisionEnter(Collision collision)

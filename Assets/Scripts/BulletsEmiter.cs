@@ -8,7 +8,9 @@ public class BulletsEmiter : MonoBehaviour {
     [SerializeField]
     private Bullet prefab;
     [SerializeField]
-    private ParticleSystem explosionPrefab;
+    private EffectWithSound shootEffect;
+    [SerializeField]
+    private EffectWithSound explosionEffect;
 
     [SerializeField]
     private float power;
@@ -16,13 +18,15 @@ public class BulletsEmiter : MonoBehaviour {
     public float MaxRange;
 
 
-    private GameObjectPull<Bullet> bulletsPull; 
-    private GameObjectPull<ParticleSystem> effectsPull; 
+    private GameObjectPull<Bullet> bulletsPull;
+    private GameObjectPull<EffectWithSound> shootsPull;
+    private GameObjectPull<EffectWithSound> explosionsPull; 
 
 	// Use this for initialization
 	void Start () {
         bulletsPull = new GameObjectPull<Bullet>(new GameObject("BulletsPull"), prefab, 30);
-        effectsPull = new GameObjectPull<ParticleSystem>(new GameObject("EffectsPull"), explosionPrefab, 30);
+        shootsPull = new GameObjectPull<EffectWithSound>(new GameObject("ShootPull"), shootEffect, 30);
+        explosionsPull = new GameObjectPull<EffectWithSound>(new GameObject("ExplosionsPull"), explosionEffect, 30);
 	}
 
     public void Fire(Vector3 destination)
@@ -32,8 +36,8 @@ public class BulletsEmiter : MonoBehaviour {
                    
 
         Bullet bullet = CreateBullet();
-       
-        bullet.rigidbody.velocity = startSpeed;
+        StartCoroutine(effectCoroutine(shootsPull, transform.position, true));
+        bullet.Rigidbody.velocity = startSpeed;
     }
 
     private Bullet CreateBullet()
@@ -44,27 +48,30 @@ public class BulletsEmiter : MonoBehaviour {
         bullet.transform.position = transform.position;
         bullet.OnHit += onHit;
         bullet.gameObject.SetActive(true);
+        
         return bullet;
     }
 
     private void onHit(Vector3 position, Bullet bullet)
     {
-        StartCoroutine(effectCoroutine(effectsPull.GetObject(), position));
         bullet.OnHit -= onHit;
-        bullet.rigidbody.velocity = Vector3.zero;
+        StartCoroutine(effectCoroutine(explosionsPull, bullet.transform.position, false));
+        bullet.Rigidbody.velocity = Vector3.zero;
         bulletsPull.ReleaseObject(bullet);
     }
 
-    private IEnumerator effectCoroutine(ParticleSystem effect, Vector3 position)
+    private IEnumerator effectCoroutine(GameObjectPull<EffectWithSound> effectsPull, Vector3 position, bool changeRotation)
     {
+        EffectWithSound effect = effectsPull.GetObject();
         effect.transform.localScale = Vector3.one;
         effect.transform.position = position;
+        if (changeRotation)
+        {
+            effect.transform.rotation = transform.rotation;
+        }
         effect.gameObject.SetActive(true);
         effect.Play();
-        while (effect.isPlaying)
-        {
-            yield return null;
-        }
+        yield return new WaitForSeconds(effect.Duration);
 
         effectsPull.ReleaseObject(effect);
     }

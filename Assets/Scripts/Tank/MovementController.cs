@@ -9,6 +9,12 @@ public class MovementController : MonoBehaviour {
     private float forwardSpeed = 0.2f;
 
     private Quaternion destRotation;
+    private Rigidbody mRigidbody;
+
+    private void Awake()
+    {
+        mRigidbody = GetComponent<Rigidbody>();
+    }
 
     public void Rotate(float angle)
     {
@@ -19,8 +25,8 @@ public class MovementController : MonoBehaviour {
      {
          float h = Input.GetAxis("Horizontal") * sideSpeed * Time.fixedDeltaTime;
          float v = Input.GetAxis("Vertical") * forwardSpeed * Time.fixedDeltaTime;
-         
-         rigidbody.AddForce(transform.forward * v);
+
+         mRigidbody.AddForce(transform.forward * v);
          if (Mathf.Abs(h) > 0.001f)
          {
              destRotation = transform.localRotation * Quaternion.AngleAxis(h, Vector3.up);
