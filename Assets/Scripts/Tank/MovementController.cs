@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class MovementController : MonoBehaviour {
 
@@ -27,7 +26,7 @@ public class MovementController : MonoBehaviour {
      {
          
          if (grounded) {
-            float h = Input.GetAxis("Horizontal") * sideSpeed;
+            float targetRotation = Input.GetAxis("Horizontal") * sideSpeed;
 	        
             Vector3 targetVelocity = new Vector3(0, 0, Input.GetAxis("Vertical"));
 	        targetVelocity = transform.TransformDirection(targetVelocity);
@@ -40,9 +39,9 @@ public class MovementController : MonoBehaviour {
 	        velocityChange.y = 0;
 	        mRigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
 
-            if (Mathf.Abs(h) > 0.001f)
+            if (Mathf.Abs(targetRotation) > 0.001f)
             {
-                destRotation = transform.localRotation * Quaternion.AngleAxis(h, transform.localRotation * Vector3.up);
+                destRotation = transform.localRotation * Quaternion.AngleAxis(targetRotation, transform.localRotation * Vector3.up);
             }
 
             transform.localRotation = Quaternion.Lerp(transform.localRotation, destRotation, Time.fixedDeltaTime);

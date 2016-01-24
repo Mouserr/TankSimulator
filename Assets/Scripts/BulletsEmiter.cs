@@ -1,7 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
-using Assets.Helpers;
 
 public class BulletsEmiter : MonoBehaviour {
 
@@ -11,6 +9,9 @@ public class BulletsEmiter : MonoBehaviour {
     private EffectWithSound shootEffect;
     [SerializeField]
     private EffectWithSound explosionEffect;
+    [SerializeField]
+    [Range(0, 60)]
+    private float shootAngle = 45;
 
     public float MaxRange;
     public float MinRange;
@@ -20,7 +21,6 @@ public class BulletsEmiter : MonoBehaviour {
     private GameObjectPull<EffectWithSound> shootsPull;
     private GameObjectPull<EffectWithSound> explosionsPull; 
 
-	// Use this for initialization
 	void Start () {
         bulletsPull = new GameObjectPull<Bullet>(new GameObject("BulletsPull"), prefab, 30);
         shootsPull = new GameObjectPull<EffectWithSound>(new GameObject("ShootPull"), shootEffect, 30);
@@ -30,7 +30,7 @@ public class BulletsEmiter : MonoBehaviour {
     public void Fire(Vector3 destination)
     {
         Vector3 startSpeed = calculateStartSpeed(transform.position,
-            destination, Mathf.PI / 4);
+            destination, Mathf.Deg2Rad * shootAngle);
         if (startSpeed == Vector3.zero)
             return;
         Bullet bullet = CreateBullet();
