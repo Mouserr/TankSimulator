@@ -32,15 +32,16 @@ public class BulletsEmiter : MonoBehaviour {
                    
 
         Bullet bullet = CreateBullet();
-        bullet.transform.position = transform.position;
+       
         bullet.rigidbody.velocity = startSpeed;
-        //bullet.rigidbody.AddForce(transform.forward * power, ForceMode.Impulse);
     }
 
     private Bullet CreateBullet()
     {
         Bullet bullet = bulletsPull.GetObject();
         bullet.transform.localScale = prefab.transform.localScale;
+        bullet.transform.rotation = transform.rotation;
+        bullet.transform.position = transform.position;
         bullet.OnHit += onHit;
         bullet.gameObject.SetActive(true);
         return bullet;
