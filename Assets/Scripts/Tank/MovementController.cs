@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
-public class MovementController : MonoBehaviour {
+public class MovementController : NetworkBehaviour
+{
 
     [SerializeField]
     private float sideSpeed = 10f;
@@ -24,6 +26,7 @@ public class MovementController : MonoBehaviour {
 
      private void FixedUpdate()
      {
+         if (!isLocalPlayer) return;
          
          if (grounded) {
             float targetRotation = Input.GetAxis("Horizontal") * sideSpeed;

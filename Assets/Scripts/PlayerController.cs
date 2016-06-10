@@ -1,7 +1,8 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class GameController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
     [SerializeField]
     private Texture2D crossMissTexture;
@@ -31,6 +32,9 @@ public class GameController : MonoBehaviour {
 
     private void Update()
     {
+        if (!isLocalPlayer)
+            return;
+
         Ray crossRay = mainCamera.ScreenPointToRay(Input.mousePosition);
        
         if (!terrainCollider.Raycast(crossRay, out lastCursorHitInfo, 10000))
@@ -65,7 +69,7 @@ public class GameController : MonoBehaviour {
 
         if (canShoot && Input.GetMouseButtonUp(0))
         {
-             bulletsEmiter.Fire(lastCursorHitInfo.point);
+             bulletsEmiter.CmdFire(lastCursorHitInfo.point);
         }
     }
 

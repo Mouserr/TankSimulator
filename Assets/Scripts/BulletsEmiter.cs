@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class BulletsEmiter : MonoBehaviour {
+public class BulletsEmiter : NetworkBehaviour {
 
     [SerializeField]
     private Bullet prefab;
@@ -27,7 +28,8 @@ public class BulletsEmiter : MonoBehaviour {
         explosionsPull = new GameObjectPull<EffectWithSound>(new GameObject("ExplosionsPull"), explosionEffect, 30);
 	}
 
-    public void Fire(Vector3 destination)
+    [Command]
+    public void CmdFire(Vector3 destination)
     {
         Vector3 startSpeed = calculateStartSpeed(transform.position,
             destination, Mathf.Deg2Rad * shootAngle);
@@ -36,8 +38,11 @@ public class BulletsEmiter : MonoBehaviour {
         Bullet bullet = CreateBullet();
         StartCoroutine(effectCoroutine(shootsPull, transform.position, true));
         bullet.Rigidbody.velocity = startSpeed;
+
+        NetworkServer.Spawn(bullet.gameObject);
     }
 
+    
     private Bullet CreateBullet()
     {
         Bullet bullet = bulletsPull.GetObject();
