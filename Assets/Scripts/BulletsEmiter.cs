@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 
-public class BulletsEmiter : NetworkBehaviour {
+public class BulletsEmiter : MonoBehaviour {
 
     [SerializeField]
     private Bullet prefab;
@@ -28,10 +28,10 @@ public class BulletsEmiter : NetworkBehaviour {
         explosionsPull = new GameObjectPull<EffectWithSound>(new GameObject("ExplosionsPull"), explosionEffect, 30);
 	}
 
-    [Command]
+    
     public void CmdFire(Vector3 destination)
     {
-        Vector3 startSpeed = calculateStartSpeed(transform.position,
+		Vector3 startSpeed = calculateStartSpeed(transform.position,
             destination, Mathf.Deg2Rad * shootAngle);
         if (startSpeed == Vector3.zero)
             return;

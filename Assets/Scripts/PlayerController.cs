@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Networking;
+using Object = UnityEngine.Object;
 
 public class PlayerController : NetworkBehaviour {
 
@@ -10,23 +11,35 @@ public class PlayerController : NetworkBehaviour {
     private Texture2D crossTexture;
     [SerializeField]
     private Vector2 crossOffset = new Vector2(16, 16);
-
+	[SerializeField]
+	private Camera mainCamera;
     private BulletsEmiter bulletsEmiter;
     private TowerController towerController;
     private MovementController movementController;
-    private Camera mainCamera;
+	
     private TerrainCollider terrainCollider;
 
     RaycastHit lastCursorHitInfo;
     bool canShoot;
 
+	public void Init()
+	{
+		if (!isLocalPlayer)
+		{
+			Object.Destroy(mainCamera.gameObject);
+		}
+		else
+		{
+			terrainCollider = GetComponentInParent<TerrainCollider>();
+			bulletsEmiter = GetComponentInChildren<BulletsEmiter>();
+			towerController = GetComponentInChildren<TowerController>();
+			movementController = GetComponentInChildren<MovementController>();
+		}
+	}
+
     private void Awake()
     {
-        mainCamera = GetComponentInChildren<Camera>();
-        terrainCollider = GetComponentInChildren<TerrainCollider>();
-        bulletsEmiter = GetComponentInChildren<BulletsEmiter>();
-        towerController = GetComponentInChildren<TowerController>();
-        movementController = GetComponentInChildren<MovementController>();
+       
         
     }
 
@@ -69,9 +82,14 @@ public class PlayerController : NetworkBehaviour {
 
         if (canShoot && Input.GetMouseButtonUp(0))
         {
-             bulletsEmiter.CmdFire(lastCursorHitInfo.point);
+			CmdFire(lastCursorHitInfo.point);
         }
     }
 
+	[Command]
+	private void CmdFire(Vector3 destination)
+	{
+		bulletsEmiter.CmdFire(destination);
+	}
 
 }
